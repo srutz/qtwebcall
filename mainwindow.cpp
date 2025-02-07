@@ -14,6 +14,7 @@
 #include <QFontDatabase>
 #include <future>
 #include <memory>
+#include "jsonfetcher.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -84,17 +85,34 @@ MainWindow::MainWindow(QWidget *parent)
                 widget->setQuote(quote);
                 quotesPanelLayout->addWidget(widget);
             }
+            fetcher->deleteLater();
         });
-        connect(fetcher, &QuoteFetcher::error, this, [=](const QString &message) {
+        connect(fetcher, &QuoteFetcher::error, this, [=,this](const QString &message) {
             qDebug() << "error " << message;
+            fetcher->deleteLater();
         });
         fetcher->fetchQuotes();
     };
-    connect(fetch1Button, &QPushButton::clicked, this, [=]() { runFetch(); });
+
+    auto runJsonFetch = [=,this] {
+        JsonFetcher *fetcher = new JsonFetcher();
+        connect(fetcher, &JsonFetcher::responseReceived, this, [=,this](const QJsonDocument &doc) {
+            auto formattedJson = doc.toJson(QJsonDocument::Indented);
+            textBrowser->setText(formattedJson);
+            fetcher->deleteLater();
+        });
+        connect(fetcher, &JsonFetcher::error, this, [=,this](const QString &message) {
+            qDebug() << "error " << message;
+            fetcher->deleteLater();
+        });
+        fetcher->fetch({ .url = "https://icanhazdadjoke.com/" });
+    };
+
+    connect(fetch1Button, &QPushButton::clicked, this, [=]() { runJsonFetch(); });    
     connect(ui->actionFetchQuotes, &QAction::triggered, this, [=]() { runFetch(); });
 
+    runJsonFetch();
 
-    connect(fetch1Button, &QPushButton::clicked, this, [=]() { runFetch(); });
 
 }
 

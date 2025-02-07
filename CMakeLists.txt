@@ -11,19 +11,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
 
-set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
-        quotefetcher.h quotefetcher.cpp
-        quotewidget.h quotewidget.cpp
-        util.h util.cpp
-)
 
 qt_add_executable(qtwebcall
     MANUAL_FINALIZATION
-    ${PROJECT_SOURCES}
+    main.cpp
+    mainwindow.cpp
+    mainwindow.h
+    mainwindow.ui
+    raiiguard.h
+    quotefetcher.h quotefetcher.cpp
+    quotewidget.h quotewidget.cpp
+    util.h util.cpp
+    jsonfetcher.h jsonfetcher.cpp
 )
 
 target_link_libraries(qtwebcall PRIVATE Qt6::Widgets Qt6::Network)
