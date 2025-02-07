@@ -14,7 +14,6 @@
 #include <QFontDatabase>
 #include <future>
 #include <memory>
-#include "asyncfetcher.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -55,9 +54,6 @@ MainWindow::MainWindow(QWidget *parent)
     auto fetch1Button = new QPushButton(this);
     fetch1Button->setText("Fetch Quotes 1");
     buttonsPanelLayout->addWidget(fetch1Button);
-    auto fetch2Button = new QPushButton(this);
-    fetch2Button->setText("Fetch Async");
-    buttonsPanelLayout->addWidget(fetch2Button);
 
     layout->addWidget(buttonsPanel);
 
@@ -98,17 +94,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionFetchQuotes, &QAction::triggered, this, [=]() { runFetch(); });
 
 
-    auto runFetchAsync = [=,this]() -> Task<QJsonDocument> {
-        qDebug() << "async json";
-        AsyncFetcher fetcher({. url = "https://dummyjson.com/quotes/20"});
-        auto json = co_await fetcher.fetchJson();
-        qDebug() << "got json" << json;
-        co_return json;
-    };
     connect(fetch1Button, &QPushButton::clicked, this, [=]() { runFetch(); });
-    connect(fetch2Button, &QPushButton::clicked, this, [=]() { 
-        runFetchAsync(); 
-    });
 
 }
 

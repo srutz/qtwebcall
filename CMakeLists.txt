@@ -19,7 +19,6 @@ set(PROJECT_SOURCES
         quotefetcher.h quotefetcher.cpp
         quotewidget.h quotewidget.cpp
         util.h util.cpp
-        asyncfetcher.h asyncfetcher.cpp
 )
 
 qt_add_executable(qtwebcall
