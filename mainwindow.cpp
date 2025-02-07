@@ -12,6 +12,9 @@
 #include <QSplitter>
 #include <QMargins>
 #include <QFontDatabase>
+#include <future>
+#include <memory>
+#include "asyncfetcher.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -46,16 +49,21 @@ MainWindow::MainWindow(QWidget *parent)
 
     auto buttonsPanel = new QWidget(this);
     auto buttonsPanelLayout = new QHBoxLayout(buttonsPanel);
-    auto fetchButton = new QPushButton(this);
-    fetchButton->setText("Fetch Quotes");
     buttonsPanelLayout->addStretch();
     buttonsPanelLayout->setContentsMargins(QMargins(0, 0, 0, 0));
-    buttonsPanelLayout->addWidget(fetchButton);
+
+    auto fetch1Button = new QPushButton(this);
+    fetch1Button->setText("Fetch Quotes 1");
+    buttonsPanelLayout->addWidget(fetch1Button);
+    auto fetch2Button = new QPushButton(this);
+    fetch2Button->setText("Fetch Async");
+    buttonsPanelLayout->addWidget(fetch2Button);
+
     layout->addWidget(buttonsPanel);
 
-    auto runFetch = [=] {
+    auto runFetch = [=,this] {
         fetcher = new QuoteFetcher();
-        connect(fetcher, &QuoteFetcher::quotesReceived, this, [=](const QJsonArray &quotes) {
+        connect(fetcher, &QuoteFetcher::quotesReceived, this, [=,this](const QJsonArray &quotes) {
             qDebug() << "got " << quotes.size() << " quotes";
             auto doc = QJsonDocument(quotes);
             auto formattedJson = doc.toJson(QJsonDocument::Indented);
@@ -86,8 +94,17 @@ MainWindow::MainWindow(QWidget *parent)
         });
         fetcher->fetchQuotes();
     };
+    connect(fetch1Button, &QPushButton::clicked, this, [=]() { runFetch(); });
     connect(ui->actionFetchQuotes, &QAction::triggered, this, [=]() { runFetch(); });
-    connect(fetchButton, &QPushButton::clicked, this, [=]() { runFetch(); });
+
+
+    auto runFetchAsync = [=,this]() -> Task<QJsonDocument> {
+        AsyncFetcher fetcher({. url = "https://dummyjson.com/quotes/20"});
+        auto json = co_await fetcher.fetchJson();
+        co_return json;
+    };
+    connect(fetch1Button, &QPushButton::clicked, this, [=]() { runFetch(); });
+
 }
 
 MainWindow::~MainWindow()

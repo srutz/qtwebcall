@@ -6,7 +6,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
@@ -24,6 +24,7 @@ qt_add_executable(qtwebcall
     quotefetcher.h quotefetcher.cpp
     quotewidget.h quotewidget.cpp
     util.h util.cpp
+    asyncfetcher.h asyncfetcher.cpp
     )
 
 target_link_libraries(qtwebcall PRIVATE Qt6::Widgets Qt6::Network)
