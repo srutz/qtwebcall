@@ -99,11 +99,16 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     auto runFetchAsync = [=,this]() -> Task<QJsonDocument> {
+        qDebug() << "async json";
         AsyncFetcher fetcher({. url = "https://dummyjson.com/quotes/20"});
         auto json = co_await fetcher.fetchJson();
+        qDebug() << "got json" << json;
         co_return json;
     };
     connect(fetch1Button, &QPushButton::clicked, this, [=]() { runFetch(); });
+    connect(fetch2Button, &QPushButton::clicked, this, [=]() { 
+        runFetchAsync(); 
+    });
 
 }
 

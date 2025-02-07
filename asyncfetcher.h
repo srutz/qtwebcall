@@ -2,9 +2,6 @@
 #define ASYNCFETCHER_H
 
 #include <QObject>
-
-
-#include <QObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QJsonDocument>
@@ -25,15 +22,36 @@ public:
         if (coro) coro.destroy();
     }
 
+    T result() const { return coro.promise().result; }
+
+    bool await_ready() const { return false; }
+    void await_suspend(std::coroutine_handle<> h) { coro.promise().continuation = h; }
+    T await_resume() {
+        if (coro.promise().exception) {
+            std::rethrow_exception(coro.promise().exception);
+        }
+        return coro.promise().result;
+    }
+
     struct promise_type {
         T result;
         std::exception_ptr exception;
+        std::coroutine_handle<> continuation;
 
         Task get_return_object() {
             return Task(handle_type::from_promise(*this));
         }
         std::suspend_never initial_suspend() { return {}; }
-        std::suspend_never final_suspend() noexcept { return {}; }
+        auto final_suspend() noexcept {
+            struct awaiter {
+                bool await_ready() noexcept { return false; }
+                void await_suspend(std::coroutine_handle<promise_type> h) noexcept {
+                    h.promise().continuation.resume();
+                }
+                void await_resume() noexcept {}
+            };
+            return awaiter{};
+        }
         void return_value(T value) {
             result = std::move(value);
         }
@@ -42,12 +60,9 @@ public:
         }
     };
 
-    T result() const { return coro.promise().result; }
-
 private:
     handle_type coro;
 };
-
 
 // Awaitable type for network operations
 class NetworkAwaiter {
@@ -82,9 +97,6 @@ private:
     static inline QByteArray m_result;
     static inline QString m_error;
 };
-
-
-
 
 struct AsyncFetcherOptions {
     QString url;

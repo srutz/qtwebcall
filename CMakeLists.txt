@@ -16,16 +16,16 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        quotefetcher.h quotefetcher.cpp
+        quotewidget.h quotewidget.cpp
+        util.h util.cpp
+        asyncfetcher.h asyncfetcher.cpp
 )
 
 qt_add_executable(qtwebcall
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
-    quotefetcher.h quotefetcher.cpp
-    quotewidget.h quotewidget.cpp
-    util.h util.cpp
-    asyncfetcher.h asyncfetcher.cpp
-    )
+)
 
 target_link_libraries(qtwebcall PRIVATE Qt6::Widgets Qt6::Network)
 
